@@ -1,22 +1,23 @@
 package models;
+import java.util.UUID;
 
 public class User {
-  private String id;
+  private UUID id;
   private String userName;
   private String password;
   
-  public User(String id, String userName, String password) {
+  public User(UUID id, String userName, String password) {
     this.id = id;
     this.userName = userName;
     this.password = password;
     
   }
 
-  public String getId() {
+  public UUID getId() {
     return id;
   }
 
-  public void setId(String id) {
+  public void setId(UUID id) {
     this.id = id;
   }
 
