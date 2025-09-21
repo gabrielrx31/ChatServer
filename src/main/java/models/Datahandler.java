@@ -7,6 +7,7 @@ import java.util.UUID;
 public class Datahandler {
     
     private List<Message> messagesArray;
+// UUID i default constructor?
 
     public Datahandler() {
         this.messagesArray = new ArrayList<>();
