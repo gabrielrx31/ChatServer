@@ -1,15 +1,16 @@
-package Services;
+package services;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-// Handles Thread pool. 
+// Handles Thread pool.
 public class ThreadExecutorService {
   private ExecutorService pool;
 
-  // Creates the PoolSize based on Avaliable Cores on the system. 
+  // Bruger poolSize-parameteren til at oprette puljen
   public ThreadExecutorService(int poolSize) {
-    this.pool = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+    this.pool = Executors.newFixedThreadPool(poolSize);
+    System.out.println("Tråd-pulje oprettet med " + poolSize + " tråde.");
   }
 
   // Adds Runnable to the pool,
@@ -24,5 +25,6 @@ public class ThreadExecutorService {
   // Shutdown the pool
   public void shutdown() {
     pool.shutdown();
+    System.out.println("Tråd-pulje lukket.");
   }
 }
