@@ -1,15 +1,18 @@
 package models;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 public class MessageModel {
-    public final long timestamp;
-    public final String type;
-    public final String sender;
-    public final UUID chatroomId;
-    public final String content;
+    public UUID messageId;
+    public LocalDateTime timestamp;
+    public String type;
+    public String sender;
+    public UUID chatroomId;
+    public String content;
 
-    public MessageModel(long timestamp, String type, String sender, UUID chatroomId, String content) {
+    public MessageModel(UUID messageId, LocalDateTime timestamp, String type, String sender, UUID chatroomId, String content) {
+        this.messageId = messageId;
         this.timestamp = timestamp;
         this.type = type;
         this.sender = sender;
