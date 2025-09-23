@@ -23,7 +23,7 @@ public class Server {
                     Socket socket = serverSocket.accept();
                     System.out.println("Client har nu forbindelse: " + socket.getInetAddress());
 
-                    threadPool.submit(new ClientHandler(socket));
+                    
                 }
             } catch (IOException e) {
                 e.printStackTrace();
@@ -33,7 +33,7 @@ public class Server {
         }
     
     public static void main(String[] args) {
-        Server server = new Server(5010, 20);
+        Server server = new Server(5001, 20);
         server.start();
     }
 }
