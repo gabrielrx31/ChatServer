@@ -6,21 +6,21 @@ import java.util.UUID;
 
 public class Datahandler {
     
-    private List<Message> messagesArray;
+    private List<MessageModel> messagesArray;
 
     public Datahandler() {
         this.messagesArray = new ArrayList<>();
     }
 
-    public void addMessageToArray(Message message) {
+    public void addMessageToArray(MessageModel message) {
         messagesArray.add(message);
     }
-    public void deleteMessage(String id) {
+    public void deleteMessage(UUID id) {
         int count = 0;
 
-        for (Message message : messagesArray ) {
+        for (MessageModel message : messagesArray ) {
             count++;
-            if (message.getId().equals(id)) {
+            if (message.messageId.equals(id)) {
                 messagesArray.remove(count);
             }
 
@@ -28,13 +28,13 @@ public class Datahandler {
     }
 
 
-    public Message getMessageById (String id){
-      Message foundMessage = null; 
+    public MessageModel getMessageById (UUID id){
+      MessageModel foundMessage = null; 
 
-        for (Message message : messagesArray ) {
+        for (MessageModel message : messagesArray ) {
             
             
-            if (!message.getId().equals(id)) {
+            if (!message.messageId.equals(id)) {
                 System.out.println("besked kan ikke findes");
                 
             } else {
@@ -46,19 +46,19 @@ public class Datahandler {
     }
 
     public void updateMessage (UUID id, String newText){
-        for(Message message : messagesArray) {
-            if(message.getId().equals(id)){
-                message.setTextFromSender(newText);
-                message.setTimestamp(java.time.LocalDateTime.now());
+        for(MessageModel message : messagesArray) {
+            if(message.messageId.equals(id)){
+                message.content = newText;
+                message.timestamp = java.time.LocalDateTime.now();
                 break;
             }
         }
     }
 
-    public List<Message> getMessages() {
+    public List<MessageModel> getMessages() {
         return messagesArray;
     }
-    public void setMessages(List<Message> messages) {
+    public void setMessages(List<MessageModel> messages) {
         this.messagesArray = messages;
     }
 }
