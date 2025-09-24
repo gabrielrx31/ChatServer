@@ -28,7 +28,7 @@ public class Server {
         this.controlPort = controlPort;
         this.dataPort = dataPort;
         this.threadPool = new ThreadExecutorService(Runtime.getRuntime().availableProcessors());
-        this.loginService = new LoginService(new models.UserHandler());
+        this.loginService = new LoginService(new Services.UserHandler());
         this.datahandler = new Datahandler();
     }
 

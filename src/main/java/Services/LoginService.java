@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import common.models.User;
-import models.UserHandler;  // Vigtigt: Sørg for at stien til User og UserHandler er korrekt
 
 public class LoginService {
 
