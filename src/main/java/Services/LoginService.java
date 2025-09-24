@@ -6,11 +6,14 @@ import java.util.Map;
 import java.util.UUID;
 import common.models.User;
 
+// This service handles user authentication, session management, and tracks active users.
 public class LoginService {
 
     private final UserHandler userHandler;
+    // Maps a user's unique ID to their User object for quick access.
     private final Map<UUID, User> activeUsers;
-    private final Map<UUID, String> userSessions; // Mapper userId til clientId
+    // Maps a user's ID to their current client session ID.
+    private final Map<UUID, String> userSessions;
 
     public LoginService(UserHandler userHandler) {
         this.userHandler = userHandler;
@@ -19,39 +22,31 @@ public class LoginService {
         System.out.println("LoginService initialized.");
     }
 
-    /**
-     * Forsøger at logge en bruger ind. Hvis brugeren ikke eksisterer, oprettes vedkommende.
-     * Returnerer null hvis brugeren allerede er logget ind.
-     * @param username Brugernavnet der skal logges ind.
-     * @param clientId Klientens unikke ID.
-     * @return User-objektet ved succes, ellers null.
-     */
+    // Attempts to log in a user. If the user doesn't exist, they are created automatically.
+    // Returns null if the user is already logged in elsewhere.
     public User attemptLogin(String username, String clientId) {
-        // Henter eller opretter brugeren via UserHandler (logik fra 'main')
         User user = userHandler.getOrCreateUser(username);
 
         if (user == null) {
             System.out.println("Login failed: Could not create or find user " + username);
-            return null; // Sikkerhedsforanstaltning
+            return null; // Should not happen if getOrCreateUser is working.
         }
 
-        // Tjekker om brugeren allerede er aktiv (logik fra din branch)
+        // Prevents a user from having multiple simultaneous sessions.
         if (activeUsers.containsKey(user.getId())) {
             System.out.println("Login failed. User already logged in: " + username);
             return null;
         }
 
-        // Registrerer brugeren som aktiv og gemmer sessionen
+        // If successful, register the user as active and map their session.
         activeUsers.put(user.getId(), user);
         userSessions.put(user.getId(), clientId);
         System.out.println("Login success: " + username + " with clientId: " + clientId);
         return user;
     }
 
-    /**
-     * Parser en login-besked og forsøger at logge brugeren ind.
-     * Format: "clientId|timestamp|LOGIN|username"
-     */
+    // Parses a raw login message string and calls the main login logic.
+    // Expected format: "clientId|timestamp|LOGIN|username"
     public User parseAndValidateLogin(String loginMessage) {
         try {
             String[] parts = loginMessage.split("\\|");
@@ -68,11 +63,7 @@ public class LoginService {
         }
     }
 
-    /**
-     * Logger en bruger ud baseret på deres UUID.
-     * @param userId Brugerens ID.
-     * @return true hvis brugeren blev logget ud, ellers false.
-     */
+    // Logs a user out based on their permanent user ID.
     public boolean logout(UUID userId) {
         User user = activeUsers.remove(userId);
         userSessions.remove(userId);
@@ -83,13 +74,10 @@ public class LoginService {
         return false;
     }
 
-    /**
-     * Logger en bruger ud baseret på deres clientId.
-     * @param clientId Klientens ID.
-     * @return true hvis brugeren blev logget ud, ellers false.
-     */
+    // A convenience method to log a user out using their temporary session ID.
     public boolean logoutByClientId(String clientId) {
         UUID userIdToLogout = null;
+        // Find the user ID associated with the given client ID.
         for (Map.Entry<UUID, String> entry : userSessions.entrySet()) {
             if (clientId.equals(entry.getValue())) {
                 userIdToLogout = entry.getKey();
@@ -102,23 +90,22 @@ public class LoginService {
         return false;
     }
     
-    /**
-     * Finder en bruger ud fra deres brugernavn via UserHandler.
-     * @param username Brugernavnet der skal søges efter.
-     * @return User-objektet hvis det findes, ellers null.
-     */
+    // A passthrough method to find a user by their name via the UserHandler.
     public User getUserByUsername(String username) {
         return userHandler.getUserByUsername(username);
     }
     
+    // Checks if a user is currently logged in.
     public boolean isUserActive(UUID userId) {
         return activeUsers.containsKey(userId);
     }
 
+    // Retrieves the current session ID for a given user.
     public String getClientId(UUID userId) {
         return userSessions.get(userId);
     }
 
+    // Simple validation to ensure the timestamp in a login message is correctly formatted.
     private boolean isValidTimestamp(String timestamp) {
         try {
             DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").parse(timestamp);
