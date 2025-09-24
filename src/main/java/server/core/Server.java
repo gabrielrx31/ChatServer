@@ -29,8 +29,8 @@ public class Server {
         this.controlPort = controlPort;
         this.dataPort = dataPort;
         this.threadPool = new ThreadExecutorService(Runtime.getRuntime().availableProcessors());
-        this.loginService = loginService; // Tildeler den modtagne service
-        this.datahandler = datahandler;   // Tildeler den modtagne service
+        this.loginService = loginService; 
+        this.datahandler = datahandler;  
     }
 
     public void start() {
@@ -81,7 +81,6 @@ public class Server {
     }
 
     public static void main(String[] args) {
-        // Opret alle services her i starten
         UserHandler userHandler = new UserHandler();
         LoginService loginService = new LoginService(userHandler);
         Datahandler datahandler = new Datahandler();
