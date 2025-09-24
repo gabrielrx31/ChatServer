@@ -1,0 +1,13 @@
+[2025-09-24 19:04:35] [INFO] [SERVER_LIFECYCLE] - Control server is live and listening on port: 5010
+[2025-09-24 19:04:48] [ERROR] [SYSTEM_ERROR] - Server error: Could not start on control port 5010
+java.net.BindException: Address already in use
+	at java.base/sun.nio.ch.Net.bind0(Native Method)
+	at java.base/sun.nio.ch.Net.bind(Net.java:511)
+	at java.base/sun.nio.ch.Net.bind(Net.java:500)
+	at java.base/sun.nio.ch.NioSocketImpl.bind(NioSocketImpl.java:630)
+	at java.base/java.net.ServerSocket.bind(ServerSocket.java:326)
+	at java.base/java.net.ServerSocket.<init>(ServerSocket.java:222)
+	at java.base/java.net.ServerSocket.<init>(ServerSocket.java:138)
+	at server.core.Server.listenForControlConnections(Server.java:44)
+	at server.core.Server.start(Server.java:40)
+	at server.core.Server.main(Server.java:84)

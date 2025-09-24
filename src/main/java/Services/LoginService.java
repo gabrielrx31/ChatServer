@@ -4,7 +4,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
-import models.User;         // Vigtigt: Sørg for at stien til User og UserHandler er korrekt
+import common.models.User;
 import models.UserHandler;  // Vigtigt: Sørg for at stien til User og UserHandler er korrekt
 
 public class LoginService {
@@ -78,7 +78,7 @@ public class LoginService {
         User user = activeUsers.remove(userId);
         userSessions.remove(userId);
         if (user != null) {
-            System.out.println("Logout success: " + user.getUsername() + " is now offline.");
+            System.out.println("Logout success: " + user.getUserName() + " is now offline.");
             return true;
         }
         return false;

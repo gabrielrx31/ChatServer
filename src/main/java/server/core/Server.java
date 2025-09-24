@@ -11,6 +11,10 @@ import Services.LoginService;
 import Services.ThreadExecutorService;
 import common.models.Datahandler;
 
+import server.utils.Logger;
+import server.utils.Logger.LogEvent;
+
+
 
 
 public class Server {
@@ -24,7 +28,7 @@ public class Server {
         this.controlPort = controlPort;
         this.dataPort = dataPort;
         this.threadPool = new ThreadExecutorService(Runtime.getRuntime().availableProcessors());
-        this.loginService = new LoginService();
+        this.loginService = new LoginService(new models.UserHandler());
         this.datahandler = new Datahandler();
     }
 
@@ -32,20 +36,20 @@ public class Server {
         // Start a new thread to listen for data connections
         new Thread(this::listenForDataConnections).start();
         
-        // Use the main thread to listen for control connections (as before)
+        // Use the main thread to listen for control connections
         listenForControlConnections();
     }
 
     private void listenForControlConnections() {
         try (ServerSocket serverSocket = new ServerSocket(controlPort)) {
-            System.out.println("Control server is live and listening on port: " + controlPort);
+            Logger.info(LogEvent.SERVER_LIFECYCLE, "Control server is live and listening on port: " + controlPort);
             while (true) {
                 Socket socket = serverSocket.accept();
-                System.out.println("New control connection from: " + socket.getInetAddress());
+                Logger.info(LogEvent.USER_SESSION,("New control connection from: " + socket.getInetAddress()));
                 threadPool.addJob(new ServerHandler(socket, loginService, datahandler));
             }
         } catch (IOException e) {
-            System.err.println("Server error: Could not start on control port " + controlPort);
+            Logger.error(LogEvent.SYSTEM_ERROR,"Server error: Could not start on control port " + controlPort, e);
             e.printStackTrace();
         }
     }
@@ -56,12 +60,13 @@ public class Server {
             while (true) {
                 Socket socket = dataSocket.accept();
                 System.out.println("New data connection from: " + socket.getInetAddress());
+
                 // When a client connects, the first thing it must do is send a unique transfer ID.
                 // We read the ID here and pass it to the manager.
                 try {
                     DataInputStream dataIn = new DataInputStream(socket.getInputStream());
                     UUID transferId = UUID.fromString(dataIn.readUTF());
-                    // This is the corrected line:
+            
                     DataTransferManager.handleNewDataConnection(transferId, socket);
                 } catch (IOException e) {
                     System.err.println("Error handling new data connection: " + e.getMessage());
