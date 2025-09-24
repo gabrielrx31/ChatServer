@@ -2,6 +2,7 @@ package common.models;
 
 import java.util.UUID;
 
+// A straightforward class to hold user information.
 public class User {
     private UUID id;
     private String userName;
@@ -9,7 +10,7 @@ public class User {
     public User(UUID id, String userName, String password) {
         this.id = id;
         this.userName = userName;
-        // Password parameter is kept for future use but is not currently stored.
+        // The password field is included for potential future authentication features.
     }
 
     public UUID getId() {

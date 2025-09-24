@@ -6,6 +6,19 @@ The server is capable of handling multiple simultaneous clients, managing differ
 
 ---
 
+## 📋 Table of Contents
+
+* [Key Features](#-key-features)
+* [New in this Version](#-new-in-this-version)
+* [System Architecture](#️-system-architecture-deep-dive)
+* [How It Works](#-how-it-works-a-step-by-step-flow)
+* [Communication Protocol](#-communication-protocol)
+* [Getting Started](#-getting-started)
+* [Future Improvements](#-future-improvements)
+* [Contributors](#-contributors)
+
+---
+
 ## 🌟 Key Features
 
 * **Service-Oriented Architecture:** The application logic is decoupled into distinct services (`LoginService`, `ChatroomManager`, `DataTransferManager`), making the system modular, scalable, and easy to maintain.
@@ -18,23 +31,16 @@ The server is capable of handling multiple simultaneous clients, managing differ
 
 ---
 
-## 🎓 Why This Project is a Good Learning Resource
+## ✨ New in this Version
 
-This project serves as a practical example of several important computer science and software engineering concepts:
-
-* **Object-Oriented Design:** Demonstrates encapsulation, inheritance, and polymorphism through its class structure.
-* **Concurrency and Multithreading:** Shows how to build a responsive, non-blocking server that can handle many tasks at once.
-* **Network Programming:** Provides a deep look into `java.net` sockets, streams, and client-server communication.
-* **Design Patterns:** Implicitly uses patterns like **Singleton** (for manager classes), **Factory** (thread creation), and **Observer** (broadcasting messages).
-* **Protocol Design:** Illustrates the importance of creating a strict, well-documented communication protocol for distributed systems.
+* **Custom Logging Framework:** Implemented a robust, event-driven logger that writes structured output to both the console and a persistent `server.log` file. This provides deep insight into server activity and makes debugging significantly easier.
+* **Emoji Support:** Users can now express themselves with emojis! The server supports both direct Unicode emojis and translates common text shortcuts (like `:)`) into their graphical equivalents (😊).
 
 ---
 
 ## 🏗️ System Architecture Deep Dive
 
 The server is built on a layered architecture where each component has a single, well-defined responsibility.
-
-
 
 ### Core Components
 
@@ -62,40 +68,27 @@ The server is built on a layered architecture where each component has a single,
 
 ## ⚙️ How It Works: A Step-by-Step Flow
 
-Understanding the flow of data is key to understanding the design.
-
 ### Flow 1: A User Sends a Chat Message
 
-1.  **Client:** The user types a message in `ClientUI`. The client formats this into a protocol string: `SEND_MSG::...::Hello World`.
+1.  **Client:** The user types a message in `ClientUI`. The client formats this into a protocol string: `SEND_MSG::...::Hello World :)`.
 2.  **Server (Control Port):** The `Server` accepts the connection and the client's dedicated `ServerHandler` reads the string.
-3.  **Command Routing:** The `ServerHandler` splits the string, identifies the `SEND_MSG` command, and calls its internal `handleTextMessage` method.
-4.  **Message Parsing:** The `MessageProtocol` class is used to parse the string into a structured `MessageModel` object. This object is saved to the `Datahandler` (in-memory history).
-5.  **Broadcasting:** The `ServerHandler` gets the user's current chat room from the `ChatroomManager`. It then iterates through the members of that room.
-6.  **Targeted Delivery:** For each member, it retrieves their unique client ID and uses `ClientManager.unibroadcastMessage()` to send the formatted chat message directly to their socket.
+3.  **Command Routing & Parsing:** The `ServerHandler` identifies the `SEND_MSG` command and uses `MessageProtocol` to parse the string into a `MessageModel` object.
+4.  **Emoji Conversion:** The server checks the message content for shortcuts like `:)` and converts them to `😊`.
+5.  **Broadcasting:** The `ServerHandler` gets the user's current chat room from `ChatroomManager` and uses `ClientManager.unibroadcastMessage()` to send the final, formatted message to all members of the room.
 
 ### Flow 2: User A Sends a File to User B
 
-1.  **Initiation (User A):** User A uses the `ClientUI` to send a request: `WANT_TO_SEND_FILE::UserB::document.pdf::102400`.
-2.  **Mediation (Server):** User A's `ServerHandler` receives the request. It validates that User B is online using the `LoginService`.
-3.  **Forwarding Request:** The server generates a unique `transferId` and forwards a notification to User B's `ClientHandler`: `INCOMING_FILE::UserA::document.pdf::102400::[transferId]`.
-4.  **Acceptance (User B):** User B's `ClientUI` prompts them to accept. If they type "ja", the client sends `ACCEPT_FILE::[transferId]` back to the server.
-5.  **Orchestration (DataTransferManager):**
-    * User B's `ServerHandler` receives the acceptance and calls the `DataTransferManager`.
-    * The `DataTransferManager` registers the pending transfer.
-    * The server sends two separate commands back to the clients:
-        * To User A: `START_FILE_TRANSFER::5011::[transferId]`
-        * To User B: `PROCEED_WITH_DOWNLOAD::5011::[transferId]`
-6.  **Data Connection:** Both `ClientUI` instances receive their respective commands and **independently connect to the server's data port (5011)**. They each send the unique `transferId` as the first piece of data.
-7.  **Relaying:** The `DataTransferManager`, which has been waiting for two connections with the same ID, receives them, pairs their sockets, and starts the `relayFileStream` method. This method reads bytes from User A's socket and writes them directly to User B's socket until the specified file size is reached. The server acts as a pass-through, never saving the file to its own disk.
-8.  **Completion:** Once the relay is finished, both sockets on the data port are closed, and the control connection remains open for further commands.
+1.  **Initiation (User A):** User A sends a request: `WANT_TO_SEND_FILE::UserB::document.pdf::102400`.
+2.  **Mediation (Server):** User A's `ServerHandler` validates that User B is online and forwards the request: `INCOMING_FILE::UserA::...`.
+3.  **Acceptance (User B):** User B accepts, sending `ACCEPT_FILE::[transferId]` back to the server.
+4.  **Orchestration (DataTransferManager):** The server sends commands to both clients (`START_FILE_TRANSFER` and `PROCEED_WITH_DOWNLOAD`), telling them to connect to the data port (5011) with the unique `transferId`.
+5.  **Data Connection & Relaying:** Both clients connect to the data port. The `DataTransferManager` pairs their sockets and starts piping the file data directly from the sender to the receiver. The server acts as a pass-through, never saving the file to its own disk.
 
 ---
 
 ## 📜 Communication Protocol
 
-The server operates on a strict, delimiter-based protocol. All messages sent to the control port must follow these formats.
-
-**Delimiter:** `::`
+The server operates on a strict, delimiter-based protocol (`::`).
 
 ### Core Commands
 
@@ -103,7 +96,7 @@ The server operates on a strict, delimiter-based protocol. All messages sent to 
 * `LOGOUT`
 * `LIST_ROOMS`
 * `JOIN_ROOM::[chatroomId]`
-* `SEND_MSG::[messageId]::[timestamp]::[type]::[sender]::[chatroomId]::[content]`
+* `SEND_MSG::[...details...]::[content]`
 
 ### File Transfer Commands
 
@@ -129,13 +122,13 @@ The server operates on a strict, delimiter-based protocol. All messages sent to 
     ```sh
     cd ChatServer/src/main/java/
     ```
-3.  **Compile All Server and Common Files:**
-    This command ensures all necessary packages are compiled.
+3.  **Compile All Java Files:**
+    This command compiles all necessary packages in the correct order.
     ```sh
-    javac server/core/*.java Services/*.java common/models/*.java common/protocols/*.java models/*.java
+    javac common/models/*.java common/protocols/*.java Services/*.java server/utils/*.java server/core/*.java
     ```
 4.  **Run the Server:**
-    Execute the main `Server` class. It will automatically start listeners on ports 5010 (control) and 5011 (data).
+    Execute the main `Server` class. It will start listeners on ports 5010 (control) and 5011 (data).
     ```sh
     java server.core.Server
     ```
@@ -151,7 +144,7 @@ The server operates on a strict, delimiter-based protocol. All messages sent to 
     ```sh
     java client.ClientUI
     ```
-    You can run multiple instances of the client to simulate a multi-user environment. Follow the on-screen prompts to log in and interact with the server.
+    You can run multiple instances of the client to simulate a multi-user environment. Follow the on-screen prompts to log in and interact.
 
 ---
 
@@ -159,5 +152,13 @@ The server operates on a strict, delimiter-based protocol. All messages sent to 
 
 * **Persistent Storage:** Replace the in-memory `Datahandler` with a database (like SQLite or PostgreSQL) to persist users, chat rooms, and message history.
 * **Private Messaging:** Implement a `PRIVATE_MSG` command to allow one-to-one communication.
-* **Encryption:** Use `SSLServerSocket` and `SSLSocket` to encrypt all communication between the client and server.
+* **Encryption:** Use `SSLServerSocket` and `SSLSocket` to encrypt all communication.
 * **GUI Client:** Build a graphical user interface using a framework like JavaFX or Swing for a more user-friendly experience.
+
+---
+
+## 👥 Contributors
+
+* Jonas
+* Lasse
+* Gabriel

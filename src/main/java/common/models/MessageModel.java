@@ -3,10 +3,11 @@ package common.models;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+// A simple data object that represents a single message in the system.
 public class MessageModel {
     public UUID messageId;
     public LocalDateTime timestamp;
-    public String type;
+    public String type; // e.g., "TEXT" or "SYSTEM"
     public String sender;
     public UUID chatroomId;
     public String content;

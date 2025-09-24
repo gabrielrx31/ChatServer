@@ -6,35 +6,36 @@ import java.util.UUID;
 
 import common.models.User;
 
+// Manages the lifecycle of user accounts, such as creation and retrieval.
+// This acts as the central source of truth for all registered users, whether they are online or not.
 public class UserHandler {
-    private Map<String, User> registeredUsers; // username -> User
+    private Map<String, User> registeredUsers; // Maps a username to a User object.
     
-    // Constructor
     public UserHandler() {
         this.registeredUsers = new HashMap<>();
         System.out.println("UserHandler initialized.");
     }
     
+    // Creates a new user if the username is not already taken.
     public User createUser(String username) {
-        // Check if username is already taken
         if (registeredUsers.containsKey(username)) {
             System.out.println("Username already exists: " + username);
-            return null; // Username already exists
+            return null;
         }
         
-        // Generate a new user ID and create User object
         UUID userId = UUID.randomUUID();
-        User newUser = new User(userId, username, ""); // Empty password for username-only login
+        User newUser = new User(userId, username, ""); // Password is empty for now.
         registeredUsers.put(username, newUser);
         
-        System.out.println("Bruger oprettet: " + username + " med ID: " + userId);
+        System.out.println("User created: " + username + " with ID: " + userId);
         return newUser;
     }
     
+    // A convenience method that retrieves a user or creates them if they don't exist.
+    // This is useful for a system where users don't need to register beforehand.
     public User getOrCreateUser(String username) {
         User user = registeredUsers.get(username);
         if (user == null) {
-            // Auto create user if not found
             user = createUser(username);
         }
         return user;
@@ -44,6 +45,8 @@ public class UserHandler {
         return registeredUsers.get(username);
     }
 
+    // Iterates through all users to find one by their unique ID.
+    // This can be slow with many users; a second map (UUID -> User) would optimize this.
     public User getUserById(UUID userId) {
         for (User user : registeredUsers.values()) {
             if (user.getId().equals(userId)) {
@@ -61,6 +64,7 @@ public class UserHandler {
         return getUserById(userId) != null;
     }
   
+    // Returns a copy of the user map to prevent external modification.
     public Map<String, User> getAllUsers() {
         return new HashMap<>(registeredUsers);
     }
@@ -71,31 +75,25 @@ public class UserHandler {
    
     public boolean removeUser(String username) {
         User removedUser = registeredUsers.remove(username);
-        if (removedUser != null) {
-            System.out.println("Bruger fjernet: " + username);
-            return true;
-        }
-        return false;
+        return removedUser != null;
     }
   
+    // Allows changing a user's display name, ensuring the new name isn't already taken.
     public boolean updateUsername(String oldUsername, String newUsername) {
-        // Check if old username exists
         User user = registeredUsers.get(oldUsername);
         if (user == null) {
-            return false; // Old username doesn't exist
+            return false; // User to update doesn't exist.
         }
         
-        // Check if new username is already taken
         if (registeredUsers.containsKey(newUsername)) {
-            return false; // New username already exists
+            return false; // New username is already in use.
         }
         
-        // Update username
         user.setUserName(newUsername);
         registeredUsers.remove(oldUsername);
         registeredUsers.put(newUsername, user);
         
-        System.out.println("Username opdateret fra: " + oldUsername + " til: " + newUsername);
+        System.out.println("Username updated from: " + oldUsername + " to: " + newUsername);
         return true;
     }
 }

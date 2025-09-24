@@ -5,6 +5,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
 
+// This class acts as an in-memory database for chat messages.
 public class Datahandler {
     
     private List<MessageModel> messagesArray;
@@ -17,6 +18,7 @@ public class Datahandler {
         messagesArray.add(message);
     }
 
+    // Safely removes a message using an iterator to avoid concurrency issues.
     public void deleteMessage(UUID id) {
         Iterator<MessageModel> iterator = messagesArray.iterator();
         while (iterator.hasNext()) {
@@ -37,6 +39,7 @@ public class Datahandler {
         return null;
     }
 
+    // Finds a message by its ID and updates its content and timestamp.
     public void updateMessage(UUID id, String newText) {
         for (MessageModel message : messagesArray) {
             if (message.messageId.equals(id)) {
@@ -51,6 +54,7 @@ public class Datahandler {
         return messagesArray;
     }
     
+    // Allows replacing the entire message list, mainly for testing or initial setup.
     public void setMessages(List<MessageModel> messages) {
         this.messagesArray = messages;
     }
