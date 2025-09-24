@@ -9,6 +9,7 @@ import java.util.UUID;
 import Services.DataTransferManager;
 import Services.LoginService;
 import Services.ThreadExecutorService;
+import Services.UserHandler;
 import common.models.Datahandler;
 
 import server.utils.Logger;
@@ -24,12 +25,12 @@ public class Server {
     private final LoginService loginService;
     private final Datahandler datahandler;
 
-    public Server(int controlPort, int dataPort) {
+    public Server(int controlPort, int dataPort, LoginService loginService, Datahandler datahandler) {
         this.controlPort = controlPort;
         this.dataPort = dataPort;
         this.threadPool = new ThreadExecutorService(Runtime.getRuntime().availableProcessors());
-        this.loginService = new LoginService(new models.UserHandler());
-        this.datahandler = new Datahandler();
+        this.loginService = loginService; 
+        this.datahandler = datahandler;  
     }
 
     public void start() {
@@ -80,7 +81,11 @@ public class Server {
     }
 
     public static void main(String[] args) {
-        Server server = new Server(5010, 5011); // Define both ports
+        UserHandler userHandler = new UserHandler();
+        LoginService loginService = new LoginService(userHandler);
+        Datahandler datahandler = new Datahandler();
+
+        Server server = new Server(5010, 5011, loginService, datahandler);
         server.start();
     }
 }

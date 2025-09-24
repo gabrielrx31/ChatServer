@@ -1,4 +1,4 @@
-package models.protocols;
+package common.protocols;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
