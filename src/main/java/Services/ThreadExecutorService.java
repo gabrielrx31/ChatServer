@@ -3,28 +3,29 @@ package Services;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-// Handles Thread pool.
+// Denne klasse håndterer en tråd-pulje til at køre jobs asynkront.
 public class ThreadExecutorService {
-  private ExecutorService pool;
+    private ExecutorService pool;
 
-  // Bruger poolSize-parameteren til at oprette puljen
-  public ThreadExecutorService(int poolSize) {
-    this.pool = Executors.newFixedThreadPool(poolSize);
-    System.out.println("Tråd-pulje oprettet med " + poolSize + " tråde.");
-  }
-
-  // Adds Runnable to the pool,
-  public void addJob(Runnable job) {
-    try {
-      pool.submit(job);
-    } catch (Exception e) {
-      System.err.println("An error occurred while submitting a job: " + e.getMessage());
-      e.printStackTrace();
+    public ThreadExecutorService(int poolSize) {
+        // Opretter en pulje med et fast antal tråde for at undgå at overbelaste systemet.
+        this.pool = Executors.newFixedThreadPool(poolSize);
+        System.out.println("Tråd-pulje oprettet med " + poolSize + " tråde.");
     }
-  }
-  // Shutdown the pool
-  public void shutdown() {
-    pool.shutdown();
-    System.out.println("Tråd-pulje lukket.");
-  }
+
+    // Tilføjer et nyt job (en Runnable) til puljens kø.
+    public void addJob(Runnable job) {
+        try {
+            pool.submit(job);
+        } catch (Exception e) {
+            System.err.println("Der opstod en fejl under tilføjelse af job til puljen: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    // Lukker puljen ned. Nye jobs vil blive afvist.
+    public void shutdown() {
+        pool.shutdown();
+        System.out.println("Tråd-pulje lukket ned.");
+    }
 }
