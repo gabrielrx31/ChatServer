@@ -4,6 +4,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
+import common.models.User;
+
 public class UserHandler {
     private Map<String, User> registeredUsers; // username -> User
     
