@@ -159,6 +159,6 @@ The server operates on a strict, delimiter-based protocol (`::`).
 
 ## 👥 Contributors
 
-* Jonas
+* Jon
 * Lasse
 * Gabriel
