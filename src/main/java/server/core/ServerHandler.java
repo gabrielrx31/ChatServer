@@ -22,6 +22,7 @@ import common.models.Datahandler;
 import common.models.MessageModel;
 import common.models.User;
 import common.protocols.MessageProtocol;
+import server.utils.Logger;
 
 
 // Each instance of this class handles all communication for a single connected client.
@@ -161,6 +162,7 @@ public class ServerHandler implements Runnable {
         if (currentUser != null) {
             this.isAuthenticated = true;
             dataOut.writeUTF("SUCCESS: Logged in as " + currentUser.getUserName());
+            Logger.info(Logger.LogEvent.USER_SESSION, "Client logget ind: " + currentUser.getUserName());
         } else {
             this.isAuthenticated = false;
             dataOut.writeUTF("ERROR: Login failed.");
@@ -172,6 +174,7 @@ public class ServerHandler implements Runnable {
             loginService.logoutByClientId(clientId.toString());
             this.isAuthenticated = false;
             dataOut.writeUTF("SUCCESS: Logged out.");
+            Logger.info(Logger.LogEvent.USER_SESSION, "Client logged out: " + (currentUser != null ? currentUser.getUserName() : "Unknown"));
         } else {
             dataOut.writeUTF("ERROR: Not logged in.");
         }

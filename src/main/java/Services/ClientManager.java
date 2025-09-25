@@ -7,6 +7,9 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
+import server.utils.Logger;
+import server.utils.Logger.LogEvent;
+
 // This class acts as a central registry for all connected clients.
 // It allows any part of the server to send messages without needing direct access to socket objects.
 public class ClientManager {
@@ -16,13 +19,17 @@ public class ClientManager {
     // Registers a new client when they connect.
     public static void addClient(UUID clientId, Socket socket) {
         clients.put(clientId, socket);
-        System.out.println("New client added: " + clientId);
+        Logger.info(LogEvent.USER_SESSION, "New client added: " + clientId + " from " + socket.getRemoteSocketAddress());
     }
 
     // Removes a client when they disconnect.
     public static void removeClient(UUID clientId) {
-        clients.remove(clientId);
-        System.out.println("Client removed: " + clientId);
+        Socket removed = clients.remove(clientId);
+        if (removed != null) {
+            Logger.info(LogEvent.USER_SESSION, "Client removed: " + clientId);
+        } else {
+            Logger.warning(LogEvent.USER_SESSION, "Attempted to remove non-existent client: " + clientId);
+        }
     }
 
     // Retrieves a client's socket using their session ID.
@@ -32,13 +39,14 @@ public class ClientManager {
 
     // Sends a message to every connected client.
     public static void broadcastMessage(String message) {
-        for (Socket socket : clients.values()) {
+        for (Map.Entry<UUID, Socket> entry : clients.entrySet()) {
+            UUID clientId = entry.getKey();
+            Socket socket = entry.getValue();
             try {
-                // A new DataOutputStream is created for each message to ensure thread safety.
                 new DataOutputStream(socket.getOutputStream()).writeUTF(message);
+                Logger.info(LogEvent.CHAT_MESSAGE, "Broadcast message sent to client " + clientId);
             } catch (IOException e) {
-                System.err.println("Error during broadcast to client: " + e.getMessage());
-                // In a real application, you might want to remove the client if the socket is broken.
+                Logger.error(LogEvent.CHAT_MESSAGE, "Broadcast failed for client " + clientId, e);
             }
         }
     }
@@ -49,11 +57,12 @@ public class ClientManager {
         if (socket != null && !socket.isClosed()) {
             try {
                 new DataOutputStream(socket.getOutputStream()).writeUTF(message);
+                Logger.info(LogEvent.CHAT_MESSAGE, "Unicast message sent to client " + clientId);
             } catch (IOException e) {
-                System.err.println("Error during unibroadcast to client " + clientId + ": " + e.getMessage());
+                Logger.error(LogEvent.CHAT_MESSAGE, "Unicast failed for client " + clientId, e);
             }
         } else {
-            System.err.println("Recipient client not found or connection is closed: " + clientId);
+            Logger.warning(LogEvent.CHAT_MESSAGE, "Recipient client not found or connection closed: " + clientId);
         }
     }
 }

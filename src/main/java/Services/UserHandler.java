@@ -5,38 +5,42 @@ import java.util.Map;
 import java.util.UUID;
 
 import common.models.User;
+import server.utils.Logger;
+import server.utils.Logger.LogEvent;
 
 // Manages the lifecycle of user accounts, such as creation and retrieval.
 // This acts as the central source of truth for all registered users, whether they are online or not.
 public class UserHandler {
-    private Map<String, User> registeredUsers; // Maps a username to a User object.
+    private Map<String, User> registeredUsers; 
     
     public UserHandler() {
         this.registeredUsers = new HashMap<>();
-        System.out.println("UserHandler initialized.");
+        Logger.info(LogEvent.DATABASE, "UserHandler initialized");
     }
     
     // Creates a new user if the username is not already taken.
     public User createUser(String username) {
         if (registeredUsers.containsKey(username)) {
-            System.out.println("Username already exists: " + username);
+            Logger.warning(LogEvent.USER_SESSION, "Username already exists: " + username);
             return null;
         }
         
         UUID userId = UUID.randomUUID();
-        User newUser = new User(userId, username, ""); // Password is empty for now.
+        User newUser = new User(userId, username, "");
         registeredUsers.put(username, newUser);
         
-        System.out.println("User created: " + username + " with ID: " + userId);
+        Logger.info(LogEvent.USER_SESSION, "User created: " + username + " with ID: " + userId);
         return newUser;
     }
     
-    // A convenience method that retrieves a user or creates them if they don't exist.
-    // This is useful for a system where users don't need to register beforehand.
+    // Retrieves a user or creates them if they don't exist.
     public User getOrCreateUser(String username) {
         User user = registeredUsers.get(username);
         if (user == null) {
+            Logger.info(LogEvent.USER_SESSION, "User not found, creating new user: " + username);
             user = createUser(username);
+        } else {
+            Logger.info(LogEvent.USER_SESSION, "User retrieved: " + username + " with ID: " + user.getId());
         }
         return user;
     }
@@ -45,8 +49,6 @@ public class UserHandler {
         return registeredUsers.get(username);
     }
 
-    // Iterates through all users to find one by their unique ID.
-    // This can be slow with many users; a second map (UUID -> User) would optimize this.
     public User getUserById(UUID userId) {
         for (User user : registeredUsers.values()) {
             if (user.getId().equals(userId)) {
@@ -64,7 +66,6 @@ public class UserHandler {
         return getUserById(userId) != null;
     }
   
-    // Returns a copy of the user map to prevent external modification.
     public Map<String, User> getAllUsers() {
         return new HashMap<>(registeredUsers);
     }
@@ -75,25 +76,33 @@ public class UserHandler {
    
     public boolean removeUser(String username) {
         User removedUser = registeredUsers.remove(username);
-        return removedUser != null;
+        if (removedUser != null) {
+            Logger.info(LogEvent.USER_SESSION, "User removed: " + username + " (ID: " + removedUser.getId() + ")");
+            return true;
+        } else {
+            Logger.warning(LogEvent.USER_SESSION, "Attempted to remove non-existent user: " + username);
+            return false;
+        }
     }
   
     // Allows changing a user's display name, ensuring the new name isn't already taken.
     public boolean updateUsername(String oldUsername, String newUsername) {
         User user = registeredUsers.get(oldUsername);
         if (user == null) {
-            return false; // User to update doesn't exist.
+            Logger.warning(LogEvent.USER_SESSION, "Update failed: user does not exist: " + oldUsername);
+            return false;
         }
         
         if (registeredUsers.containsKey(newUsername)) {
-            return false; // New username is already in use.
+            Logger.warning(LogEvent.USER_SESSION, "Update failed: new username already in use: " + newUsername);
+            return false;
         }
         
         user.setUserName(newUsername);
         registeredUsers.remove(oldUsername);
         registeredUsers.put(newUsername, user);
         
-        System.out.println("Username updated from: " + oldUsername + " to: " + newUsername);
+        Logger.info(LogEvent.USER_SESSION, "Username updated from " + oldUsername + " to " + newUsername);
         return true;
     }
 }
