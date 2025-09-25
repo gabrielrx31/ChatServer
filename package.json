@@ -1,0 +1,20 @@
+{
+  "name": "chatserver-1",
+  "version": "1.0.0",
+  "description": "This project is an advanced, multithreaded TCP chat server built in Java. It is designed using a modern, service-oriented architecture to demonstrate key software engineering principles such as **Separation of Concerns**, **Concurrency Management**, and **Protocol-Based Communication**.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gabrielrx31/ChatServer.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/gabrielrx31/ChatServer/issues"
+  },
+  "homepage": "https://github.com/gabrielrx31/ChatServer#readme"
+}

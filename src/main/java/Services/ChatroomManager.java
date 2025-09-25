@@ -3,6 +3,9 @@ package Services;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import server.utils.Logger;
+import server.utils.Logger.LogEvent;
+
 
 import common.models.ChatRoom;
 
@@ -28,6 +31,7 @@ public class ChatroomManager {
 
     // Retrieves a single chat room by its unique ID.
     public static ChatRoom getChatroomById(UUID id) {
+        Logger.warning(LogEvent.CHAT_MESSAGE, "Requested chatroom not found for ID: " + id);
         return chatrooms.get(id);
     }
 
@@ -35,6 +39,7 @@ public class ChatroomManager {
     public static ChatRoom createChatroom(String roomName, UUID createdBy) {
         ChatRoom newRoom = new ChatRoom(roomName, createdBy);
         chatrooms.put(newRoom.getId(), newRoom);
+        Logger.info(LogEvent.CHAT_MESSAGE, "New chatroom created: " + roomName + " with ID " + newRoom.getId());
         return newRoom;
     }
 
